@@ -1,0 +1,9 @@
+interface Quiz {
+	void newQuestion(in string q, in string ans);
+	string getRandomQuestion();
+	string getQuestion(in short index);
+	string askQuestion(in short index);
+	short checkAnswer(in short index, in string ans);
+	void removeQuestion(in short index);
+	short getAmountOfQuestions();
+};

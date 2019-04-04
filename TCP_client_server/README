@@ -1,0 +1,16 @@
+Description: 
+	A simple client-server connection over local same machine IP: 127.0.01
+	Port: 8080 and using TCP protocol
+
+How to run:
+	1. On terminal, change directory into 'HW2' folder
+	2. Open up a second terminal window
+	3. type 'make' to compile both files, client.c and server.c
+	4. On one window run server as './server', Do this first
+	5. On other window run client as './client', Do this second
+	6. Type into client window and press enter
+	7. message should appear on server window. 
+	8. 'Ctrl+C' to end demo
+
+Authors:
+	Alberto Avitia and Quang Le

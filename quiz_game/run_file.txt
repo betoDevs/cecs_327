@@ -1,0 +1,3 @@
+sudo omniNames -start 4333 -logdir /mnt/d/School/cecs327/quiz_game/omnilog/ -errlog /mnt/d/School/cecs327/quiz_game/omnilog/omniNamesError.txt
+./quizS -ORBInitRef NameService=corbaloc::localhost:4333/NameService
+./quizC_one -ORBInitRef NameService=corbaloc::localhost:4333/NameService
