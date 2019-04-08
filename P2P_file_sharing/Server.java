@@ -2,11 +2,13 @@ import java.net.*;
 import java.io.*;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class Server implements Runnable {
 	// static cuz same amongst all clients
 	private static ServerSocket serverSocket;
-	private static HashMap<Integer,List<String>> client_files; // here maybe a semaphor?
+	private static HashMap<Integer,HashMap<String, String>> client_files; // here maybe a semaphor?
 	private static int client_count;
 	private static int port;
 
@@ -20,7 +22,7 @@ public class Server implements Runnable {
 	// Main thread server will be initialized with this
 	public Server(){
 		this.port = 6666;
-		client_count = 0;
+		client_count = 6667;
 	}
 
 	// Multiple threads start with this
@@ -33,7 +35,7 @@ public class Server implements Runnable {
 
 	public void start() throws Exception {
 		serverSocket = new ServerSocket(port);
-		client_files = new HashMap<Integer,List<String>>();
+		client_files = new HashMap<Integer,HashMap<String, String>>();
 		listen();
 	}
 
@@ -56,40 +58,74 @@ public class Server implements Runnable {
 
 	// Come here after creating a thread
 	public void run() {
-		while(true){
 			try{
 				Join();
 			} catch(Exception e) {
 				System.out.println(e);
 			}
-		}
+			return;
 	}
 
 	public void Join() throws Exception{
-		String choice;
-		// Greet and give id
-		String greeting = in.readLine();
+		String choice, greeting;
+		// give id
+		greeting = in.readLine();
+		out.println(my_id);
+		// greet
+		greeting = in.readLine();
 		System.out.println(greeting);
-		out.println("Join Successful!\nWelcome to P2P, your id is: " + my_id);
+		out.println("Join Successful! Welcome to P2P, your id is: " + my_id);
 
 		// Ask for what the user wants to do
-		while(true) {
-			out.println("What would you like to do?");
-			out.println("1. Publish\n2. Search\n3. Fetch");
-			choice = in.readLine();
-		}
+		Publish();
+		return;
 	}
 
 	// information about the connected client
 	// gets added to server
-	public void Publish() {
-
+	public void Publish() throws IOException {
+		String name, path;
+		int num_of_files;
+		num_of_files = Integer.parseInt(in.readLine());
+		if(num_of_files != -1)
+			out.println("ready");
+		else {
+			out.println("Error recieving number of files");
+			return; 
+		}
+		for(int k = 0; k < num_of_files; k++){
+			name = in.readLine();
+			if(name != null)
+				Add(name, "path");
+		}
+		name = in.readLine();
+		out.println("Success");
+		Show();
+		try {
+			Controller();
+		}catch(Exception e){
+			System.out.println(e);
+		}
+		return;
 	}
 
 	// return index of a servant having the required
 	// file, else -1
-	public void Search(String file_name) {
-
+	public void Search() throws Exception {
+		String response = "-1";
+		// System.out.println("I am in Search() preread");
+		String file_name = in.readLine();
+		System.out.println("I am in Search() and looking for: " + file_name);
+		for(int i : client_files.keySet()){
+			for(Map.Entry element : client_files.get(i).entrySet()){
+				if(element.getKey().equals(file_name)){
+					response = Integer.toString(i);
+				}
+			}
+		}
+		System.out.println("Done searching");
+		out.println(response);
+		return;
 	}
 
 	// contacting peer recieves requested info
@@ -101,6 +137,49 @@ public class Server implements Runnable {
 	// check to see if a client is still active
 	public void UDPHello() {
 
+	}
+
+	public void Show(){
+		HashMap<String, String> t = client_files.get(my_id);
+		System.out.println("Displaying elements just added for client with id: " + my_id);
+		for(Map.Entry element : t.entrySet()){
+			System.out.println("File name: " + element.getKey() +
+							  " Path name: " + element.getValue());
+		}
+		return;
+	}
+
+	public void RemoveClient() {
+
+	}
+
+	public void Controller() throws Exception{
+		String choice;
+		while(true){
+			choice = in.readLine();
+			if(choice.equals("1"))
+				Search();
+			else if(choice.equals("2"))
+				Fetch(2);
+			else{
+				System.out.println("here");
+				RemoveClient();
+				return;
+			}
+		}
+	}
+
+	// Add to register
+	public void Add(String file_name, String path){
+		HashMap<String, String> tmp;
+		if(client_files.containsKey(my_id)) {
+			tmp = client_files.get(my_id);
+			tmp.put(file_name, path);
+		} else {
+			tmp = new HashMap<String, String>();
+			tmp.put(file_name, path);
+			client_files.put(my_id, tmp);
+		}
 	}
 
 	public static void main(String[] args) throws Exception{
