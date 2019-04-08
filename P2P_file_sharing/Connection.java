@@ -1,5 +1,7 @@
 import java.net.*;
 import java.io.*;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 //import org.apache.commons.io.FileUtils;
 
 public class Connection implements Runnable {
@@ -58,7 +60,7 @@ public class Connection implements Runnable {
 		for(File f : files){
 			if(f.getName().equals(request)){
 				// file found. Send as a string
-				out.println(FileUtils.readFileToString(f, "UFT-8"));
+				out.println(new String(Files.readAllBytes(Paths.get(request))));
 				return;
 			}
 		}
