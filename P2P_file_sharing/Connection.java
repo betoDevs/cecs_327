@@ -41,7 +41,13 @@ public class Connection implements Runnable {
 			send(request);
 
 			// close out P2P connection
-			stop();
+			close();
+
+			if (Thread.interrupted()){
+				close();
+				seed_socket.close();
+				break;
+			}
 		}
 	}
 
@@ -60,7 +66,7 @@ public class Connection implements Runnable {
 		for(File f : files){
 			if(f.getName().equals(request)){
 				// file found. Send as a string
-				out.println(new String(Files.readAllBytes(Paths.get(request))));
+				out.println(new String(Files.readAllBytes(Paths.get(path_to_dir+request))));
 				return;
 			}
 		}
@@ -68,9 +74,10 @@ public class Connection implements Runnable {
 		out.println("error");
 	}
 
-	public void stop() throws IOException {
+	public void close() throws IOException {
 		in.close();
 		out.close();
 		leech_socket.close();
 	}
+
 }

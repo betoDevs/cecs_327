@@ -113,9 +113,8 @@ public class Server implements Runnable {
 	// file, else -1
 	public void Search() throws Exception {
 		String response = "-1";
-		// System.out.println("I am in Search() preread");
 		String file_name = in.readLine();
-		System.out.println("I am in Search() and looking for: " + file_name);
+		System.out.println("I am looking for: " + file_name);
 		for(int i : client_files.keySet()){
 			for(Map.Entry element : client_files.get(i).entrySet()){
 				if(element.getKey().equals(file_name)){
@@ -123,7 +122,7 @@ public class Server implements Runnable {
 				}
 			}
 		}
-		System.out.println("Done searching");
+		//System.out.println("Done searching");
 		out.println(response);
 		return;
 	}
@@ -159,8 +158,10 @@ public class Server implements Runnable {
 			choice = in.readLine();
 			if(choice.equals("1"))
 				Search();
-			else if(choice.equals("2"))
-				Fetch(2);
+			else if(choice.equals("2")){
+				System.out.println("User watch to Fetch");
+				Search();
+			}
 			else{
 				System.out.println("here");
 				RemoveClient();

@@ -6,6 +6,7 @@ public class Client {
     private Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
+    private Thread connection;
     // for asking for files
     private Socket client_leech;
     private PrintWriter out_file;
@@ -25,7 +26,7 @@ public class Client {
         setId(sendMessage("Request ID"));
 
         // Sets up a recieving interface at port 'my_id'
-        Thread connection = new Thread(new Connection(Integer.parseInt(my_id), path_to_dir));
+        connection = new Thread(new Connection(Integer.parseInt(my_id), path_to_dir));
         connection.start();
 
         // Sets up a UDP that sends every 20 seconds to server
@@ -38,6 +39,7 @@ public class Client {
     }
  
     public void stopConnection() throws IOException {
+        connection.interrupt();
         in.close();
         out.close();
         clientSocket.close();
@@ -88,8 +90,22 @@ public class Client {
         	return "Not found";
 
         // else add to our dir
-        return file_in;
+        else {
+            return createFile(file_in, file);
+        }
 
+    }
+
+    public String createFile(String contents, String file_name){
+        try{
+            File destinaton = new File(path_to_dir+file_name);
+            Writer writer = new FileWriter(destinaton);
+            writer.write(contents);
+            writer.close();
+            return "Sucess!";
+        } catch(Exception e) {
+            return "Error writing to dir: " + e;
+        }
     }
 
     public void setId(String id) { my_id = id; }
