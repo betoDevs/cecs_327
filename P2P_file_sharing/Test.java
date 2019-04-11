@@ -10,6 +10,7 @@ public class Test{
 		client.startConnection("127.0.0.1", 6666);
 		System.out.println("Connection Successful. My id is: " + client.getId());
 		response = client.sendMessage("Hello Server");
+		client.sendingHello();
 		System.out.println(response);
 		response = client.publishFiles();
 		while(true) {

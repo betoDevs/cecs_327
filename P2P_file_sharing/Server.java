@@ -4,11 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Server implements Runnable {
 	// static cuz same amongst all clients
 	private static ServerSocket serverSocket;
 	private static HashMap<Integer,HashMap<String, String>> client_files; // here maybe a semaphor?
+	private static HashMap<Integer,String> actives = new HashMap<>();
+	private static HashMap<Integer,Timer> timers= new HashMap<>();
 	private static int client_count;
 	private static int port;
 
@@ -18,7 +22,8 @@ public class Server implements Runnable {
 	private BufferedReader in;
 	private int my_id;
 
-
+	//timer to count to 200 seconds
+	private static Timer timer;
 	// Main thread server will be initialized with this
 	public Server(){
 		this.port = 6666;
@@ -37,6 +42,7 @@ public class Server implements Runnable {
 		serverSocket = new ServerSocket(port);
 		client_files = new HashMap<Integer,HashMap<String, String>>();
 		listen();
+		
 	}
 
 	public void stop() throws IOException{
@@ -127,17 +133,81 @@ public class Server implements Runnable {
 		return;
 	}
 
-	// contacting peer recieves requested info
+	// contacting peer receives requested info
 	// from peer at index
 	public void Fetch(int index){
 
 	}
 
 	// check to see if a client is still active
-	public void UDPHello() {
-
+	public int UDPHello() throws Exception {
+		DatagramSocket udpSocket = new DatagramSocket(1234); 
+        byte[] receive = new byte[1024]; 
+        DatagramPacket udpReceive = null;
+        int uid =0;
+        while(true)
+        {
+        udpReceive = new DatagramPacket(receive, receive.length);
+        udpSocket.receive(udpReceive);
+        
+        String parsing = convertToString(receive).toString();
+        String sArray[] = parsing.split("/");
+        
+        uid = Integer.parseInt(sArray[0]);
+        System.out.println("received hello from" + sArray[0]);
+        String message = sArray[1];
+        if(uid !=0)
+        	udpSocket.close();
+        		break;
+        }
+        receive = new byte[1024];
+        return uid;
 	}
 
+	//thread to check active
+	public void checkActive() throws Exception
+	{
+			Thread t = new Thread(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					while(true)
+					{
+					try{
+						//get the id of the message
+						int id = UDPHello();
+						
+						//if the id is not existing, add one
+						if(!actives.containsKey(id))
+						{
+							actives.put(id, "Available");
+							System.out.println("added client");
+							
+							//start the count down after added
+							removeInactive(id);
+						}
+						else
+						{
+						//restart the count down
+						resetTimer(id);
+						}
+						
+					} catch(Exception e) {
+						System.out.println(e );
+					};
+				}	
+				}
+			});
+			t.start();
+	}
+	
+	//Thread to remove inactive
+	public void removeInactive(int x) throws Exception
+	{
+		startTimer(x);
+	}
+	
 	public void Show(){
 		HashMap<String, String> t = client_files.get(my_id);
 		System.out.println("Displaying elements just added for client with id: " + my_id);
@@ -156,6 +226,10 @@ public class Server implements Runnable {
 		String choice;
 		while(true){
 			choice = in.readLine();
+			if(choice == null)
+			{
+				return;
+			}
 			if(choice.equals("1"))
 				Search();
 			else if(choice.equals("2")){
@@ -182,9 +256,64 @@ public class Server implements Runnable {
 			client_files.put(my_id, tmp);
 		}
 	}
+	
+	//convert byte to string
+	public static StringBuilder convertToString(byte[] s)
+	{
+		if(s == null)
+			return null;
+		StringBuilder finString = new StringBuilder();
+		int x = 0;
+		while (s[x] != 0)
+		{
+			finString.append((char) s[x]);
+			x++;
+		}
+		return finString;
+	}
+	
+	//Start timer of the ID x
+	public void startTimer(int x)
+	{
+		TimerTask y = new TimerTask() {
 
+            @Override
+            public void run() {
+            	if(actives.containsKey(x))
+        			actives.remove(x);
+        			System.out.println("Remove client: " + Integer.toString(x));
+            }
+        };
+        //make a timer that remove inactive after 200 seconds
+        Timer newTimer = new Timer();
+        timers.put(x, newTimer);
+        timers.get(x).schedule(y, 2000);
+	}
+	
+	//reset a timer of the ID x
+	public void resetTimer(int x)
+	{
+		//timerTask to remove inactive clients
+		TimerTask timerTask = new TimerTask() {
+			@Override
+            public void run() {
+				if(actives.containsKey(x))
+        			actives.remove(x);
+        			System.out.println("Remove client: " + Integer.toString(x));
+            }
+		};
+		
+		//cancel the current timer and reschedule a new one
+		timers.get(x).cancel();
+		Timer newTimer = new Timer();
+		timers.put(x, newTimer);
+        timers.get(x).schedule(timerTask, 2000);
+        System.out.println(Integer.toString(x) + " timer is reset");
+	}
+	
 	public static void main(String[] args) throws Exception{
 		Server server = new Server();
+		server.checkActive();
 		server.start();
 	}
 }
