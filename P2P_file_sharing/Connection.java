@@ -44,7 +44,6 @@ public class Connection implements Runnable {
 			close();
 
 			if (Thread.interrupted()){
-				close();
 				seed_socket.close();
 				break;
 			}
@@ -78,6 +77,6 @@ public class Connection implements Runnable {
 		in.close();
 		out.close();
 		leech_socket.close();
+		Thread.currentThread().interrupt();
 	}
-
 }

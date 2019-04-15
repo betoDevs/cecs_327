@@ -1,5 +1,7 @@
 import java.net.*;
+import java.util.TimerTask;
 import java.io.*;
+import java.util.Timer;
 
 public class Client {
 	// for connection to server
@@ -7,6 +9,7 @@ public class Client {
     private PrintWriter out;
     private BufferedReader in;
     private Thread connection;
+    private Connection c;
     // for asking for files
     private Socket client_leech;
     private PrintWriter out_file;
@@ -14,6 +17,7 @@ public class Client {
     private String path_to_dir;
     private String my_id;
     private String ip;
+    private Timer timer = new Timer();
  
  	public Client(String path_to_dir){
  		this.path_to_dir = path_to_dir;
@@ -25,8 +29,9 @@ public class Client {
         in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         setId(sendMessage("Request ID"));
 
-        // Sets up a recieving interface at port 'my_id'
-        connection = new Thread(new Connection(Integer.parseInt(my_id), path_to_dir));
+        // Sets up a receiving interface at port 'my_id'
+        c = new Connection(Integer.parseInt(my_id), path_to_dir);
+        connection = new Thread(c);
         connection.start();
 
         // Sets up a UDP that sends every 20 seconds to server
@@ -39,7 +44,7 @@ public class Client {
     }
  
     public void stopConnection() throws IOException {
-        connection.interrupt();
+    	c.close();
         in.close();
         out.close();
         clientSocket.close();
@@ -73,6 +78,44 @@ public class Client {
     		return result;
     }
 
+    //sendHello to udp
+    public void sendHello() throws Exception
+    {
+    		//join the UDP
+    		DatagramSocket udpSocket = new DatagramSocket(); 
+    		InetAddress ip = InetAddress.getLocalHost(); 
+    		
+    		//buffer to hold message
+        byte buffer[] = null; 
+        String hello = getId().toString() + "/" + "Hello";
+        
+        //convert to byte to send
+        buffer = hello.getBytes();
+        DatagramPacket udpSend = new DatagramPacket(buffer, buffer.length, ip, 1234);
+        udpSocket.send(udpSend);
+        //System.out.println(getId().toString() +"Hello is sended");
+    }
+    
+    //send Hello to server every 200 seconds
+    public void sendingHello() throws Exception
+	{
+    	TimerTask y = new TimerTask() {
+
+            @Override
+            public void run() {
+            	try{
+					sendHello();
+				} catch(Exception e) {
+					System.out.println(e);
+				};
+                //System.out.println("Sending Hello");
+            }
+        };
+        
+        //modify this to change the seconds period
+        timer.schedule(y,0, 1500);
+	}
+    
     public String fetchFile(String file, int seed_id) throws Exception {
     	String file_in;
     	File file_to_be_added;
@@ -107,7 +150,6 @@ public class Client {
             return "Error writing to dir: " + e;
         }
     }
-
     public void setId(String id) { my_id = id; }
     public String getId() {return my_id; }
 }
