@@ -9,6 +9,7 @@ public class Client {
     private PrintWriter out;
     private BufferedReader in;
     private Thread connection;
+    private Connection c;
     // for asking for files
     private Socket client_leech;
     private PrintWriter out_file;
@@ -29,7 +30,8 @@ public class Client {
         setId(sendMessage("Request ID"));
 
         // Sets up a receiving interface at port 'my_id'
-        Thread connection = new Thread(new Connection(Integer.parseInt(my_id), path_to_dir));
+        c = new Connection(Integer.parseInt(my_id), path_to_dir);
+        connection = new Thread(c);
         connection.start();
 
         // Sets up a UDP that sends every 20 seconds to server
@@ -42,7 +44,7 @@ public class Client {
     }
  
     public void stopConnection() throws IOException {
-    		connection.interrupt();
+    	c.close();
         in.close();
         out.close();
         clientSocket.close();
