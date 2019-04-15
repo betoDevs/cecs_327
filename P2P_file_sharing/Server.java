@@ -148,14 +148,24 @@ public class Server implements Runnable {
 		return;
 	}
 
-	public void RemoveClient() {
-
+	public void removeClient() throws IOException {
+		in.close();
+		out.close();
+		clientSocket.close();
+		client_files.remove(my_id);
+		return;
 	}
 
 	public void Controller() throws Exception{
 		String choice;
 		while(true){
 			choice = in.readLine();
+			if(choice == null){
+				System.out.println("Client with id: " + my_id + " dc'd.");
+				// need to remove clients and it's files
+				removeClient();
+				return;
+			}
 			if(choice.equals("1"))
 				Search();
 			else if(choice.equals("2")){
@@ -164,7 +174,7 @@ public class Server implements Runnable {
 			}
 			else{
 				System.out.println("here");
-				RemoveClient();
+				removeClient();
 				return;
 			}
 		}
