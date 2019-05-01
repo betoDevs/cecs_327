@@ -2,7 +2,6 @@ import java.net.*;
 import java.io.*;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-//import org.apache.commons.io.FileUtils;
 
 public class Connection implements Runnable {
 	private ServerSocket seed_socket;
@@ -27,6 +26,7 @@ public class Connection implements Runnable {
 		} catch(Exception e) {
 			System.out.println(e);
 		}
+		System.out.println("Exiting Connection.java");
 	}
 
 	public void Controller() throws Exception{
@@ -36,17 +36,16 @@ public class Connection implements Runnable {
 			// accept connection and get request
 			// client uses Client.sendMessage()
 			request = listen();
+			if(request.equals("-1")){
+				close();
+				return;
+			}
 			
 			// send info back 
 			send(request);
 
 			// close out P2P connection
 			close();
-
-			if (Thread.interrupted()){
-				seed_socket.close();
-				break;
-			}
 		}
 	}
 
@@ -77,6 +76,5 @@ public class Connection implements Runnable {
 		in.close();
 		out.close();
 		leech_socket.close();
-		Thread.currentThread().interrupt();
 	}
 }

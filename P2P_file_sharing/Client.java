@@ -43,11 +43,26 @@ public class Client {
         return resp;
     }
  
-    public void stopConnection() throws IOException {
-    	c.close();
-        in.close();
+    public void stopConnection() throws Exception {
+    	// shut down connection
+        client_leech = new Socket(ip, Integer.parseInt(my_id));
+        out_file = new PrintWriter(client_leech.getOutputStream(), true);
+        in_file = new BufferedReader(new InputStreamReader(client_leech.getInputStream()));
+        out_file.println("-1");
+        //System.out.println(in_file.readLine());
+
+        // and close my sockets
         out.close();
+        out_file.close();
+        in.close();
+        in_file.close();
+        client_leech.close();
         clientSocket.close();
+        timer.cancel();
+
+        //wait until thread is done and return
+        connection.join();
+        System.out.println("Exiting Client.java");
     }
 
     public void sendInfo(String data){
@@ -66,7 +81,7 @@ public class Client {
     	for(File file : files) {
     		sendInfo(file.getName());
     	}
-    	status = sendMessage("What is your status");
+    	status = sendMessage("status");
     	return status;
     }
 
@@ -128,6 +143,11 @@ public class Client {
         out_file.println(file);
         file_in = in_file.readLine();
 
+        // close P2P connection
+        out_file.close();
+        in_file.close();
+        client_leech.close();
+
         // check if we got "-1"
         if(file_in.equals("-1"))
         	return "Not found";
@@ -136,7 +156,6 @@ public class Client {
         else {
             return createFile(file_in, file);
         }
-
     }
 
     public String createFile(String contents, String file_name){

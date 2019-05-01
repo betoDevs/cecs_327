@@ -10,18 +10,33 @@ public class Test{
 		String response, path_to_dir, choice;
 		Scanner in = new Scanner(System.in);
 		path_to_dir = args[0];
+
+		// Initialize my client and the client-to-client, Connection, threads
 		Client client = new Client(path_to_dir);
 		client.startConnection("127.0.0.1", 6666);
+
+		// Report if success, say hello to server
 		System.out.println("Connection Successful. My id is: " + client.getId());
 		response = client.sendMessage("Hello Server");
 		client.sendingHello();
 		System.out.println(response);
+
+		// Publish files that are available for sharing
 		response = client.publishFiles();
+		if(response == null){
+			System.out.println("Problem Publishing files.\nExiting.");
+			client.stopConnection();
+			return;
+		}
+		System.out.println("Files Sent: " + response);
+
+		// Start the interaction with server
 		while(true) {
 			// Search, Fetch or Disconnect?
 			System.out.println("1. for search, 2. for fetch, 3. for exit.");
 			choice = in.nextLine();
 
+			// make sure appropiate choice was inputted in
 			if(!validate(choice)){
 				System.out.println("Please enter an appropiate choice");
 				continue;
@@ -49,6 +64,11 @@ public class Test{
 
 				// Look and fetch for the file
 				response = client.searchFiles(choice);
+				// If i already have the file the answer will be 0
+				if(response.equals("0")){
+					System.out.println("File already in your folder.");
+					continue;
+				}
 				if(response.equals("-1"))
 					System.out.println("File not found");
 				else {
@@ -66,6 +86,8 @@ public class Test{
 			// sleep a second for easier reading
 			TimeUnit.SECONDS.sleep(1);
 		}
+		in.close();
+		System.out.println("Exiting Test.java");
 	}
 
 	public static boolean validate(String s){
