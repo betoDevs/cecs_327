@@ -8,7 +8,7 @@ public class ServerClientUDP implements Runnable{
 	private static HashMap<Integer,String> actives = new HashMap<>();
 	private static HashMap<Integer,Timer> timers= new HashMap<>();
 	private boolean open;
-	private final timer_value = 5000;
+	private final int timer_value = 5000;
 	
 	public int UDPHello() throws Exception {
 		DatagramSocket udpSocket = new DatagramSocket(1234); 

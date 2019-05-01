@@ -18,7 +18,7 @@ public class Client {
     private String my_id;
     private String ip;
     private Timer timer = new Timer();
-    private final timer_value = 4500;
+    private final int timer_value = 4500;
  
  	public Client(String path_to_dir){
  		this.path_to_dir = path_to_dir;
