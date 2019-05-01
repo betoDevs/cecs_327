@@ -18,6 +18,7 @@ public class Client {
     private String my_id;
     private String ip;
     private Timer timer = new Timer();
+    private final timer_value = 4500;
  
  	public Client(String path_to_dir){
  		this.path_to_dir = path_to_dir;
@@ -128,7 +129,7 @@ public class Client {
         };
         
         //modify this to change the seconds period
-        timer.schedule(y,0, 1500);
+        timer.schedule(y,0, timer_value);
 	}
     
     public String fetchFile(String file, int seed_id) throws Exception {

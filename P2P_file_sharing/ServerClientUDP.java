@@ -8,6 +8,7 @@ public class ServerClientUDP implements Runnable{
 	private static HashMap<Integer,String> actives = new HashMap<>();
 	private static HashMap<Integer,Timer> timers= new HashMap<>();
 	private boolean open;
+	private final timer_value = 5000;
 	
 	public int UDPHello() throws Exception {
 		DatagramSocket udpSocket = new DatagramSocket(1234); 
@@ -109,7 +110,7 @@ public class ServerClientUDP implements Runnable{
 	        //make a timer that remove inactive after 200 seconds
 	        Timer newTimer = new Timer();
 	        timers.put(x, newTimer);
-	        timers.get(x).schedule(y, 2000);
+	        timers.get(x).schedule(y, timer_value);
 		}
 		
 		//reset a timer of the ID x
@@ -129,7 +130,7 @@ public class ServerClientUDP implements Runnable{
 			timers.get(x).cancel();
 			Timer newTimer = new Timer();
 			timers.put(x, newTimer);
-	        timers.get(x).schedule(timerTask, 2000);
-	        //System.out.println(Integer.toString(x) + " timer is reset");
+	        timers.get(x).schedule(timerTask, timer_value);
+	        System.out.println(Integer.toString(x) + " Pinged.");
 		}
 }
