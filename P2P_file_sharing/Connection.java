@@ -3,6 +3,15 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 
+/*
+* This class will be a thread that starts from 'Client.java'.
+* This class' purpose is for P2P communication
+* Client starts it after it successfully connects to Server and
+* this class will wait in 'listen()' for another peer to connect and
+* ask for a file.
+*
+* Class is closed by'Client.java', when the connection to server is terminated.
+*/
 public class Connection implements Runnable {
 	private ServerSocket seed_socket;
 	private Socket leech_socket;
@@ -19,6 +28,7 @@ public class Connection implements Runnable {
 		files = new File(path_to_dir).listFiles();
 	}
 
+	// Thread starts here
 	public void run() {
 		// Send to Controller
 		try {
@@ -29,13 +39,14 @@ public class Connection implements Runnable {
 		System.out.println("Exiting Connection.java");
 	}
 
+	// control flow
 	public void Controller() throws Exception{
-		//control flow
 		String request;
 		while(true) {
 			// accept connection and get request
-			// client uses Client.sendMessage()
 			request = listen();
+
+			// '-1' is sent by its' own Client when the connection wants to be ended.
 			if(request.equals("-1")){
 				close();
 				return;
@@ -60,7 +71,6 @@ public class Connection implements Runnable {
 
 	public void send(String request) throws Exception{
 		// Get the file
-		// Maybe using a Set would be faster for bigger datasets
 		for(File f : files){
 			if(f.getName().equals(request)){
 				// file found. Send as a string
@@ -72,6 +82,7 @@ public class Connection implements Runnable {
 		out.println("error");
 	}
 
+	// closes the connection to requesting peer
 	public void close() throws IOException {
 		in.close();
 		out.close();

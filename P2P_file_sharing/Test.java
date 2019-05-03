@@ -1,6 +1,10 @@
 import java.util.concurrent.TimeUnit;
 import java.util.Scanner;
 
+/*
+* Driver class for Client.
+* Responsible for managing client I/O and controlling the behaviour of 'Client.java' 
+*/
 public class Test{
 	public static void main(String[] args) throws Exception{
 		if(args.length != 1){
@@ -8,6 +12,7 @@ public class Test{
 			return;
 		}
 		String response, path_to_dir, choice;
+		boolean connection_open = true;
 		Scanner in = new Scanner(System.in);
 		path_to_dir = args[0];
 
@@ -18,7 +23,18 @@ public class Test{
 		// Report if success, say hello to server
 		System.out.println("Connection Successful. My id is: " + client.getId());
 		response = client.sendMessage("Hello Server");
+
+		// in case Server suddenly shut down
+		if(response == null){
+			System.out.println("Server shut down\nShutting down Service.");
+			connection_open = false;
+			client.stopConnection();
+		}
+
+		// start the UDP pinging
 		client.sendingHello();
+
+		// output to us, Servers' greet response
 		System.out.println(response);
 
 		// Publish files that are available for sharing
@@ -26,12 +42,13 @@ public class Test{
 		if(response == null){
 			System.out.println("Problem Publishing files.\nExiting.");
 			client.stopConnection();
-			return;
+			connection_open = false;
 		}
+
 		System.out.println("Files Sent: " + response);
 
 		// Start the interaction with server
-		while(true) {
+		while(connection_open) {
 			// Search, Fetch or Disconnect?
 			System.out.println("1. for search, 2. for fetch, 3. for exit.");
 			choice = in.nextLine();
@@ -50,8 +67,21 @@ public class Test{
 
 				// get the id of the user with the desired file
 				response = client.searchFiles(in.nextLine());
-				if (response.equals("-1"))
+
+				// in case Server suddenly shut down
+				if(response == null){
+					System.out.println("Server shut down\nShutting down Service.");
+					connection_open = false;
+					client.stopConnection();
+					return;
+				}
+
+				// process response accordingly to either 'found', 'in pocesssion',
+				// or 'not found'.
+				else if (response.equals("-1"))
 					System.out.println("File not found");
+				else if(response.equals("0"))
+					System.out.println("You are the owner of the file.");
 				else
 					System.out.println("File found! At user with id : " + response);
 			}
@@ -64,8 +94,16 @@ public class Test{
 
 				// Look and fetch for the file
 				response = client.searchFiles(choice);
+
+				// in case Server suddenly shut down
+				if(response == null){
+					System.out.println("Server shut down\nShutting down Service.");
+					connection_open = false;
+					client.stopConnection();
+				}
+
 				// If i already have the file the answer will be 0
-				if(response.equals("0")){
+				else if(response.equals("0")){
 					System.out.println("File already in your folder.");
 					continue;
 				}
@@ -90,6 +128,7 @@ public class Test{
 		System.out.println("Exiting Test.java");
 	}
 
+	// input should not be empty and within range, incluse, 1-3 only
 	public static boolean validate(String s){
 		if(s == null || s.length() != 1) return false;
 		char c = s.charAt(0);

@@ -9,30 +9,33 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Server {
-	// static cuz same amongst all clients
-	private static ServerSocket serverSocket;
-	private static int port;
-
 	//accessible from child class w/o having to write getter and setter
-	protected static HashMap<Integer,Set<String>> client_files; // here maybe a semaphor?
+	protected static HashMap<Integer,Set<String>> client_files; 
 	protected static HashMap<Integer,String> actives = new HashMap<>();
 	protected static HashMap<Integer,Timer> timers= new HashMap<>();
 
-	// These are private to each client/thread 
+	/*
+	* serverSocket: will listen to peers when they want to connect and publish
+	* port: socket will be on port 6666
+	* client_count: will server as the id's given out to each client in order to 
+					be accesed from other peers
+	* clientSocket: bind the peer's connections to a socket and start TCP with it
+	* out/in: write to and recieve String data from clients
+	*/
+	private static ServerSocket serverSocket;
+	private static int port;
 	private int client_count;
 	private Socket clientSocket;
 	private PrintWriter out;
 	private BufferedReader in;
-	private int my_id;
 
-	//timer to count to 200 seconds
-	//private static Timer timer;
-	// Main thread server will be initialized with this
+	
 	public Server(){
 		this.port = 6666;
 		client_count = 6667;
 	}
 
+	// bind the socket to the port and go to listen()
 	public void start() throws Exception {
 		serverSocket = new ServerSocket(port);
 		client_files = new HashMap<Integer,Set<String>>();
@@ -40,6 +43,7 @@ public class Server {
 		
 	}
 
+	// closes server connections and shuts it down
 	public void stop() throws IOException{
 		in.close();
 		out.close();
@@ -47,6 +51,7 @@ public class Server {
 		serverSocket.close();
 	}
 
+	// constantly listen to peers trying to connect. Both a tcp and udp is made for each peer
 	public void listen() throws Exception {
 		Thread udp = new Thread(new ServerClientUDP());
 		udp.start();
