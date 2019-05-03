@@ -1,0 +1,22 @@
+Description:
+	A P2P, with a Server look up index program. Clients join a Server via TCP and publish the files which are available to be shared. Clients can then look for other files and if the file is found, Server will inform the searching client of the clients' id which hold the wanted file. A Client-to-Client connection is then established and requests are carried out.
+
+	Clients are also constantly pinging Server via UDP. Server uses this ping as acknowledgement that client is still active.
+
+	So far the only files available for transfer are .txt files.
+
+How to run:
+	The ip address can be changed to make any machine a server, but in this case localhost is being used for demonstration purposes. 
+
+	1) Open up at least 3 terminals, and navigate to folder where this README is located
+	2) Type make in any terminal
+	3) a: on terminal 1 type: java Server
+  	   b: on terminal 2 type: java test client_1/
+  	   c: on terminal 3 type: java test client_2/
+  	4) follow the prompts in order to share files among the different clients
+
+Future work:
+	Further testing for edge cases when disconnects happen. And, implement the option to transfer other types of files.
+
+Authors:
+	Alberto Avitia and Quang Le 
