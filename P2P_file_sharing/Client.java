@@ -170,6 +170,7 @@ public class Client {
         buffer = hello.getBytes();
         DatagramPacket udpSend = new DatagramPacket(buffer, buffer.length, ip, 1234);
         udpSocket.send(udpSend);
+        System.out.println("Pinged the server");
     }
     
     //send Hello to server every 'timer_value' seconds
